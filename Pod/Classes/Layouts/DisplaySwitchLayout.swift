@@ -20,6 +20,7 @@ private let GridLayoutCountOfColumns = 3
 open class DisplaySwitchLayout: UICollectionViewLayout {
     
     fileprivate let numberOfColumns: Int
+    fileprivate var minGridWidth: CGFloat?
     fileprivate let cellPadding: CGFloat = 6.0
     fileprivate let staticCellHeight: CGFloat
     fileprivate let nextLayoutStaticCellHeight: CGFloat
@@ -36,13 +37,19 @@ open class DisplaySwitchLayout: UICollectionViewLayout {
     
     // MARK: - Lifecycle
   
-    public init(staticCellHeight: CGFloat, nextLayoutStaticCellHeight: CGFloat, layoutState: LayoutState) {
+    public init(staticCellHeight: CGFloat, nextLayoutStaticCellHeight: CGFloat, layoutState: LayoutState, minGridWidth: CGFloat? = nil) {
         self.staticCellHeight = staticCellHeight
         self.numberOfColumns = layoutState == .list ? ListLayoutCountOfColumns : GridLayoutCountOfColumns
         self.layoutState = layoutState
         self.nextLayoutStaticCellHeight = nextLayoutStaticCellHeight
+        self.minGridWidth = minGridWidth
         
         super.init()
+    }
+    
+    func calculatMinGridColumns() {
+        guard let minGridWidth = minGridWidth else { return }
+        self.numberOfColumns = layoutState == .list ? ListLayoutCountOfColumns : Int(floor(contentWidth / minGridWidth))
     }
 
     required public init?(coder aDecoder: NSCoder) {
@@ -54,6 +61,7 @@ open class DisplaySwitchLayout: UICollectionViewLayout {
     override open func prepare() {
         super.prepare()
         
+        calculatMinGridColumns()
         baseLayoutAttributes = [DisplaySwitchLayoutAttributes]()
         
         // cells layout
@@ -101,9 +109,9 @@ open class DisplaySwitchLayout: UICollectionViewLayout {
     }
     
     // Fix bug with content offset
-    override open func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
+    override open func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint, withScrollingVelocity velocity: CGPoint) -> CGPoint {
         let previousContentOffsetPoint = previousContentOffset?.cgPointValue
-        let superContentOffset = super.targetContentOffset(forProposedContentOffset: proposedContentOffset)
+        let superContentOffset = super.targetContentOffset(forProposedContentOffset: proposedContentOffset, withScrollingVelocity: velocity)
         if let previousContentOffsetPoint = previousContentOffsetPoint {
             if previousContentOffsetPoint.y == 0 {
                 return previousContentOffsetPoint
