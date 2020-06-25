@@ -19,7 +19,7 @@ private let GridLayoutCountOfColumns = 3
 
 open class DisplaySwitchLayout: UICollectionViewLayout {
     
-    fileprivate let numberOfColumns: Int
+    fileprivate var numberOfColumns: Int
     fileprivate var minGridWidth: CGFloat?
     fileprivate let cellPadding: CGFloat = 6.0
     fileprivate let staticCellHeight: CGFloat
